@@ -20,10 +20,10 @@ export function TriFoldBook() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // 3D Tilt for closed state
+  // 3D Tilt for both closed and open states
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (isOpen || isMobile) return;
+      if (isMobile) return;
       const el = containerRef.current;
       const spot = spotlightRef.current;
       if (!el) return;
@@ -31,13 +31,16 @@ export function TriFoldBook() {
       const rect = el.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const rotateX = ((e.clientY - centerY) / rect.height) * -6;
-      const rotateY = ((e.clientX - centerX) / rect.width) * 6;
+      
+      // Much more subtle tilt when open to maintain readability
+      const intensity = isOpen ? 2 : 8; 
+      const rotateX = ((e.clientY - centerY) / rect.height) * -intensity;
+      const rotateY = ((e.clientX - centerX) / rect.width) * intensity;
 
       el.style.transition = "transform 0.1s ease-out";
       el.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
 
-      if (spot) {
+      if (spot && !isOpen) {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         spot.style.background = `radial-gradient(circle 300px at ${x}px ${y}px, rgba(255,255,255,0.15) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.9) 100%)`;
@@ -47,34 +50,33 @@ export function TriFoldBook() {
   );
 
   const handleMouseLeave = useCallback(() => {
-    if (isOpen || isMobile) return;
     const el = containerRef.current;
     const spot = spotlightRef.current;
     if (el) {
-      el.style.transition = "transform 0.6s ease";
+      el.style.transition = "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)";
       el.style.transform = "rotateX(0deg) rotateY(0deg)";
     }
-    if (spot) {
+    if (spot && !isOpen) {
       spot.style.background =
         "linear-gradient(to bottom, rgba(10,10,10,0.6) 0%, rgba(10,10,10,0.1) 35%, transparent 50%, rgba(10,10,10,0.5) 85%, rgba(10,10,10,0.8) 100%)";
     }
-  }, [isOpen, isMobile]);
+  }, [isOpen]);
 
   const springConfig: Transition = { type: "tween", ease: [0.22, 1, 0.36, 1], duration: 1.4 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-12">
-      <div className={`perspective-[2500px] w-full ${isOpen && isMobile ? 'max-w-full' : 'max-w-[380px]'} transition-all duration-700`}>
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-12 overflow-hidden">
+      <div className={`perspective-[2500px] w-full ${isOpen && !isMobile ? 'max-w-[1200px]' : 'max-w-[380px]'} transition-all duration-1000`}>
         <motion.div
           ref={containerRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           animate={{ 
-            scale: isOpen ? (isMobile ? 1 : 0.85) : 1,
-            y: isOpen && isMobile ? 0 : 0
+            scale: isOpen ? (isMobile ? 1 : 0.75) : 1,
+            z: isOpen ? 0 : 0
           }}
           transition={springConfig}
-          className={`relative w-full ${isOpen && isMobile ? 'h-auto min-h-screen pt-20 pb-32' : 'h-[80vh] min-h-[600px] max-h-[800px]'} preserve-3d flex flex-col items-center`}
+          className={`relative w-full ${isOpen && isMobile ? 'h-auto min-h-screen pt-20 pb-32' : 'h-[80vh] min-h-[600px] max-h-[800px]'} preserve-3d flex items-center justify-center`}
         >
           {/* ==========================================
               RIGHT FOLD (Contact / Back Cover)
@@ -85,11 +87,12 @@ export function TriFoldBook() {
             animate={isMobile ? {
               rotateY: 0,
               opacity: isOpen ? 1 : 0,
-              y: isOpen ? 0 : 20,
-              z: isOpen ? 0 : -10
+              y: isOpen ? 0 : 20
             } : { 
-              rotateY: isOpen ? 180 : 0, 
-              z: -10 
+              // Premium Curve: Angled slightly toward user
+              rotateY: isOpen ? 155 : 0, 
+              x: isOpen ? '100%' : '0%',
+              z: isOpen ? -20 : -10
             }}
             transition={springConfig}
           >
@@ -126,11 +129,12 @@ export function TriFoldBook() {
             initial={false}
             animate={isMobile ? {
               rotateY: 0,
-              y: isOpen ? 0 : 0,
-              z: isOpen ? 0 : 10
+              y: isOpen ? 0 : 0
             } : { 
-              rotateY: isOpen ? -180 : 0, 
-              z: 10 
+              // Premium Curve: Angled slightly toward user
+              rotateY: isOpen ? -155 : 0, 
+              x: isOpen ? '-100%' : '0%',
+              z: isOpen ? 20 : 10
             }}
             transition={springConfig}
           >
