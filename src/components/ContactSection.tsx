@@ -95,9 +95,15 @@ export function ContactSection() {
         </div>
 
         {/* Contact Card */}
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 opacity-20">
-            <Image src="/images/stamp-image.png" alt="stamp" width={80} height={80} className="object-cover" />
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 relative overflow-hidden group">
+          <div className="absolute top-2 right-2 w-20 h-20 opacity-60 -rotate-6 group-hover:rotate-0 transition-transform duration-500">
+            <Image 
+              src="/images/stamp-image.png" 
+              alt="stamp" 
+              width={80} 
+              height={80} 
+              className="object-cover rounded-xl border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)]" 
+            />
           </div>
           <div className="mb-3">
             <Image 
