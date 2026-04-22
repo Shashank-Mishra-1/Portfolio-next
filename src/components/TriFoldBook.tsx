@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, Transition } from "framer-motion";
 import Image from "next/image";
 import { ResumeSection } from "./ResumeSection";
