@@ -81,18 +81,20 @@ export function TriFoldBook() {
           {/* ==========================================
               RIGHT FOLD (Contact / Back Cover)
               ========================================== */}
+          {/* ==========================================
+              RIGHT FOLD (Contact / Back Cover)
+              ========================================== */}
           <motion.div
             className={`${isMobile && isOpen ? 'relative w-full mb-6 order-3' : 'absolute inset-0 origin-right'} preserve-3d`}
             initial={false}
+            style={{ zIndex: isOpen ? 1 : 0 }}
             animate={isMobile ? {
               rotateY: 0,
               opacity: isOpen ? 1 : 0,
               y: isOpen ? 0 : 20
             } : { 
-              // Premium Curve: Angled slightly toward user
               rotateY: isOpen ? 155 : 0, 
-              x: isOpen ? '100%' : '0%',
-              z: isOpen ? -20 : -10
+              z: isOpen ? 0 : -10
             }}
             transition={springConfig}
           >
@@ -109,6 +111,7 @@ export function TriFoldBook() {
               ========================================== */}
           <motion.div 
             className={`${isMobile && isOpen ? 'relative w-full mb-6 order-2 h-[800px]' : 'absolute inset-0'} glass-card shadow-2xl rounded-2xl`}
+            style={{ zIndex: isOpen ? 2 : 1 }}
             animate={{ 
               z: 0,
               opacity: isMobile ? (isOpen ? 1 : 0) : 1,
@@ -127,18 +130,17 @@ export function TriFoldBook() {
           <motion.div
             className={`${isMobile && isOpen ? 'relative w-full mb-6 order-1' : 'absolute inset-0 origin-left'} preserve-3d`}
             initial={false}
+            style={{ zIndex: isOpen ? 3 : 10 }}
             animate={isMobile ? {
               rotateY: 0,
               y: isOpen ? 0 : 0
             } : { 
-              // Premium Curve: Angled slightly toward user
               rotateY: isOpen ? -155 : 0, 
-              x: isOpen ? '-100%' : '0%',
-              z: isOpen ? 20 : 10
+              z: isOpen ? 0 : 10
             }}
             transition={springConfig}
           >
-            <div className={`${isMobile && isOpen ? 'hidden' : 'absolute inset-0'} bg-[#0a0a0f] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10`} style={{ transform: "translateZ(1px)" }}>
+            <div className={`${isMobile && isOpen ? 'hidden' : 'absolute inset-0'} bg-[#0a0a0f] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10`} style={{ transform: "translateZ(5px)" }}>
               <Image
                 src="/images/Real_asset.png"
                 alt="Cover"
@@ -156,7 +158,7 @@ export function TriFoldBook() {
                   transition: "background 0.1s ease",
                 }}
               />
-              <div className="absolute inset-0 flex flex-col items-center justify-between py-12 px-6 pointer-events-none">
+              <div className="absolute inset-0 flex flex-col items-center justify-between py-12 px-6 pointer-events-none z-50">
                 <div className="text-center mt-4">
                   <h1 className="glitch-hover font-[family-name:var(--font-space)] text-4xl md:text-5xl font-bold text-white tracking-[3px] leading-tight drop-shadow-xl">
                     SHASHANK
@@ -168,8 +170,11 @@ export function TriFoldBook() {
                   </p>
                 </div>
                 <motion.button
-                  onClick={() => setIsOpen(true)}
-                  className="pointer-events-auto px-12 py-3 rounded-full font-[family-name:var(--font-space)] font-bold text-sm tracking-[2px] text-white shadow-lg relative overflow-hidden group"
+                  onClick={() => {
+                    console.log("Opening book...");
+                    setIsOpen(true);
+                  }}
+                  className="pointer-events-auto px-12 py-3 rounded-full font-[family-name:var(--font-space)] font-bold text-sm tracking-[2px] text-white shadow-lg relative overflow-hidden group z-50"
                   style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}
                   whileHover={{ y: -2, boxShadow: "0 10px 30px rgba(139, 92, 246, 0.5)" }}
                   whileTap={{ scale: 0.95 }}
