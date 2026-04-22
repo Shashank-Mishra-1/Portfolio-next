@@ -8,80 +8,53 @@ import { PortfolioSection } from "./PortfolioSection";
 import { ContactSection } from "./ContactSection";
 
 export function TriFoldBook() {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const spotlightRef = useRef<HTMLDivElement>(null);
-
-  // 3D Tilt for closed state
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (isOpen) return;
-      const el = containerRef.current;
-      const spot = spotlightRef.current;
-      if (!el) return;
-
-      const rect = el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      // Reduced tilt for stability
-      const rotateX = ((e.clientY - centerY) / rect.height) * -6;
-      const rotateY = ((e.clientX - centerX) / rect.width) * 6;
-
-      el.style.transition = "transform 0.1s ease-out";
-      el.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-
-      // Spotlight
-      if (spot) {
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        spot.style.background = `radial-gradient(circle 300px at ${x}px ${y}px, rgba(255,255,255,0.15) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.9) 100%)`;
-      }
-    },
-    [isOpen]
-  );
-
-  const handleMouseLeave = useCallback(() => {
-    if (isOpen) return;
-    const el = containerRef.current;
-    const spot = spotlightRef.current;
-    if (el) {
-      el.style.transition = "transform 0.6s ease";
-      el.style.transform = "rotateX(0deg) rotateY(0deg)";
-    }
-    if (spot) {
-      spot.style.background =
-        "linear-gradient(to bottom, rgba(10,10,10,0.6) 0%, rgba(10,10,10,0.1) 35%, transparent 50%, rgba(10,10,10,0.5) 85%, rgba(10,10,10,0.8) 100%)";
-    }
-  }, [isOpen]);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   // Smooth, slow, premium tween with zero bounce to prevent clipping
   const springConfig: Transition = { type: "tween", ease: [0.22, 1, 0.36, 1], duration: 1.4 };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-12">
-      <div className="perspective-[2500px] w-full max-w-[380px]">
+      <div className={`perspective-[2500px] w-full ${isOpen && isMobile ? 'max-w-full' : 'max-w-[380px]'} transition-all duration-700`}>
         <motion.div
           ref={containerRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          animate={{ scale: isOpen ? 0.85 : 1 }}
+          animate={{ 
+            scale: isOpen ? (isMobile ? 1 : 0.85) : 1,
+            y: isOpen && isMobile ? 0 : 0
+          }}
           transition={springConfig}
-          className="relative w-full h-[80vh] min-h-[600px] max-h-[800px] preserve-3d"
+          className={`relative w-full ${isOpen && isMobile ? 'h-auto min-h-screen pt-20 pb-32' : 'h-[80vh] min-h-[600px] max-h-[800px]'} preserve-3d flex flex-col items-center`}
         >
         {/* ==========================================
             RIGHT FOLD (Contact / Back Cover)
             ========================================== */}
         <motion.div
-          className="absolute inset-0 origin-right preserve-3d"
+          className={`${isMobile && isOpen ? 'relative w-full mb-6 order-3' : 'absolute inset-0 origin-right'} preserve-3d`}
           initial={false}
-          animate={{ rotateY: isOpen ? 180 : 0, z: -10 }}
+          animate={isMobile ? {
+            rotateY: 0,
+            opacity: isOpen ? 1 : 0,
+            y: isOpen ? 0 : 20,
+            z: isOpen ? 0 : -10
+          } : { 
+            rotateY: isOpen ? 180 : 0, 
+            z: -10 
+          }}
           transition={springConfig}
         >
-          {/* Front Face (Outside Back Cover - Hidden when closed, but here for physical realism) */}
-          <div className="absolute inset-0 bg-black/80 border border-white/5 rounded-2xl shadow-2xl" style={{ transform: "translateZ(1px)" }} />
+          {/* Front Face (Hidden when closed) */}
+          <div className={`${isMobile && isOpen ? 'hidden' : 'absolute inset-0'} bg-black/80 border border-white/5 rounded-2xl shadow-2xl`} style={{ transform: "translateZ(1px)" }} />
 
           {/* Back Face (Contact - Visible when open) */}
-          <div className="absolute inset-0 glass-card shadow-2xl rounded-2xl" style={{ transform: "rotateY(180deg) translateZ(1px)" }}>
+          <div className={`${isMobile && isOpen ? 'relative h-[600px]' : 'absolute inset-0'} glass-card shadow-2xl rounded-2xl`} style={isMobile ? {} : { transform: "rotateY(180deg) translateZ(1px)" }}>
             <div className="scroll-pane p-6 text-[var(--color-text)]">
               <ContactSection />
             </div>
@@ -92,8 +65,13 @@ export function TriFoldBook() {
             CENTER SPINE (Portfolio)
             ========================================== */}
         <motion.div 
-          className="absolute inset-0 glass-card shadow-2xl rounded-2xl"
-          animate={{ z: 0 }}
+          className={`${isMobile && isOpen ? 'relative w-full mb-6 order-2 h-[800px]' : 'absolute inset-0'} glass-card shadow-2xl rounded-2xl`}
+          animate={{ 
+            z: 0,
+            opacity: isMobile ? (isOpen ? 1 : 0) : 1,
+            scale: isMobile ? (isOpen ? 1 : 0.9) : 1
+          }}
+          transition={springConfig}
         >
           <div className="scroll-pane p-6 text-[var(--color-text)]">
             <PortfolioSection />
@@ -104,13 +82,20 @@ export function TriFoldBook() {
             LEFT FOLD (Main Cover / Resume)
             ========================================== */}
         <motion.div
-          className="absolute inset-0 origin-left preserve-3d"
+          className={`${isMobile && isOpen ? 'relative w-full mb-6 order-1' : 'absolute inset-0 origin-left'} preserve-3d`}
           initial={false}
-          animate={{ rotateY: isOpen ? -180 : 0, z: 10 }}
+          animate={isMobile ? {
+            rotateY: 0,
+            y: isOpen ? 0 : 0,
+            z: isOpen ? 0 : 10
+          } : { 
+            rotateY: isOpen ? -180 : 0, 
+            z: 10 
+          }}
           transition={springConfig}
         >
           {/* Front Face (Main Cover - Visible when closed) */}
-          <div className="absolute inset-0 bg-[#0a0a0f] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10" style={{ transform: "translateZ(1px)" }}>
+          <div className={`${isMobile && isOpen ? 'hidden' : 'absolute inset-0'} bg-[#0a0a0f] rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10`} style={{ transform: "translateZ(1px)" }}>
             <Image
               src="/images/Real_asset.png"
               alt="Cover"
@@ -156,7 +141,7 @@ export function TriFoldBook() {
           </div>
 
           {/* Back Face (Resume - Visible when open) */}
-          <div className="absolute inset-0 glass-card shadow-2xl rounded-2xl" style={{ transform: "rotateY(180deg) translateZ(1px)" }}>
+          <div className={`${isMobile && isOpen ? 'relative h-[800px]' : 'absolute inset-0'} glass-card shadow-2xl rounded-2xl`} style={isMobile ? {} : { transform: "rotateY(180deg) translateZ(1px)" }}>
             <div className="scroll-pane p-6 text-[var(--color-text)]">
               <ResumeSection />
             </div>
@@ -173,11 +158,11 @@ export function TriFoldBook() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: 0.4 }}
-                className="absolute -bottom-16 left-1/2 -translate-x-1/2 z-50"
+                className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100]"
               >
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="px-8 py-2 rounded-full glass-card text-[var(--color-text-muted)] hover:text-[var(--color-text)] font-[family-name:var(--font-space)] tracking-widest text-sm hover:bg-[var(--color-border)] transition-colors"
+                  className="px-12 py-3 rounded-full glass-card text-white bg-blue-600/20 border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] font-[family-name:var(--font-space)] tracking-widest text-sm backdrop-blur-xl"
                 >
                   CLOSE
                 </button>
@@ -189,3 +174,4 @@ export function TriFoldBook() {
     </div>
   );
 }
+
