@@ -10,15 +10,35 @@ import { ContactSection } from "./ContactSection";
 export function TriFoldBook() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [smartScale, setSmartScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const spotlightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const check = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      if (isOpen) {
+        if (mobile) {
+          setSmartScale(1);
+        } else {
+          // Calculate scale to fit 1200px spread into available width with margin
+          const padding = 100;
+          const targetWidth = 1200;
+          const availableWidth = window.innerWidth - padding;
+          const newScale = Math.min(0.8, availableWidth / targetWidth);
+          setSmartScale(newScale);
+        }
+      } else {
+        setSmartScale(1);
+      }
+    };
+    
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
-  }, []);
+  }, [isOpen]);
 
   // 3D Tilt for both closed and open states
   const handleMouseMove = useCallback(
@@ -72,15 +92,12 @@ export function TriFoldBook() {
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           animate={{ 
-            scale: isOpen ? (isMobile ? 1 : 0.75) : 1,
-            z: isOpen ? 0 : 0
+            scale: smartScale,
+            z: 0
           }}
           transition={springConfig}
           className={`relative w-full ${isOpen && isMobile ? 'h-auto min-h-screen pt-20 pb-32' : 'h-[80vh] min-h-[600px] max-h-[800px]'} preserve-3d flex items-center justify-center`}
         >
-          {/* ==========================================
-              RIGHT FOLD (Contact / Back Cover)
-              ========================================== */}
           {/* ==========================================
               RIGHT FOLD (Contact / Back Cover)
               ========================================== */}
@@ -170,10 +187,7 @@ export function TriFoldBook() {
                   </p>
                 </div>
                 <motion.button
-                  onClick={() => {
-                    console.log("Opening book...");
-                    setIsOpen(true);
-                  }}
+                  onClick={() => setIsOpen(true)}
                   className="pointer-events-auto px-12 py-3 rounded-full font-[family-name:var(--font-space)] font-bold text-sm tracking-[2px] text-white shadow-lg relative overflow-hidden group z-50"
                   style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}
                   whileHover={{ y: -2, boxShadow: "0 10px 30px rgba(139, 92, 246, 0.5)" }}
