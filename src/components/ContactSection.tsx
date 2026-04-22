@@ -100,7 +100,13 @@ export function ContactSection() {
             <Image src="/images/stamp-image.png" alt="stamp" width={80} height={80} className="object-cover" />
           </div>
           <div className="mb-3">
-            <Image src="/images/signature.png" alt="Signature" width={100} height={35} className="opacity-80 invert" />
+            <Image 
+              src="/images/signature.png" 
+              alt="Signature" 
+              width={100} 
+              height={35} 
+              className="opacity-80 invert mix-blend-screen" 
+            />
           </div>
           <h4 className="font-[family-name:var(--font-space)] text-white font-semibold text-base">
             {personalInfo.name.split(" ").map(w => w[0] + w.slice(1).toLowerCase()).join(" ")}
